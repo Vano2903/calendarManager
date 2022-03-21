@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -34,8 +35,7 @@ func getClient(config *oauth2.Config) *http.Client {
 // Request a token from the web, then returns the retrieved token.
 func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	fmt.Printf("Go to the following link in your browser then type the "+
-		"authorization code: \n%v\n", authURL)
+	fmt.Printf("premi l'url e, dopo aver verificato le varie cose copia il valore del parametro 'code': \n\n%v\n", authURL)
 
 	var authCode string
 	if _, err := fmt.Scan(&authCode); err != nil {
@@ -102,13 +102,13 @@ func main() {
 	fmt.Printf("family name %q\n", info.FamilyName)
 	fmt.Printf("gender %q\n", info.Gender)
 	fmt.Printf("given name %q\n", info.GivenName)
-	fmt.Println("hosted domain %q\n", info.Hd)
+	fmt.Printf("hosted domain %q\n", info.Hd)
 	fmt.Printf("ID %q\n", info.Id)
 	fmt.Printf("link %q\n", info.Link)
 	fmt.Printf("locale %q\n", info.Locale)
 	fmt.Printf("name %q\n", info.Name)
 	fmt.Printf("picure %q\n", info.Picture)
-	fmt.Printf("verified %q\n", info.VerifiedEmail)
+	fmt.Printf("verified %v\n", info.VerifiedEmail)
 
 	info2, err := s.Tokeninfo().Do()
 	if err != nil {
@@ -118,8 +118,8 @@ func main() {
 	fmt.Printf("access_type %q\n", info2.AccessType)
 	fmt.Printf("audience %q\n", info2.Audience)
 	fmt.Printf("email %q\n", info2.Email)
-	fmt.Printf("verified_email %q\n", info2.VerifiedEmail)
-	fmt.Printf("email_verified %q\n", info2.EmailVerified)
+	fmt.Printf("verified_email %v\n", info2.VerifiedEmail)
+	fmt.Printf("email_verified %v\n", info2.EmailVerified)
 	fmt.Printf("expires_in %q\n", info2.ExpiresIn)
 	fmt.Printf("issued_at %q\n", info2.IssuedAt)
 	fmt.Printf("issued_to %q\n", info2.IssuedTo)
@@ -134,25 +134,26 @@ func main() {
 	}
 	srv.UserAgent = "calendar-manager-v1"
 
-	// t := time.Now().Format(time.RFC3339)
-	// events, err := srv.Events.List("primary").ShowDeleted(true).SingleEvents(true).TimeMin(t).OrderBy("startTime").Do() //SingleEvents(true).TimeMin(t).MaxResults(10).
-	// if err != nil {
-	// 	log.Fatalf("Unable to retrieve next ten of the user's events: %v", err)
-	// }
+	fmt.Println("======EVENTS======")
+	t := time.Now().Format(time.RFC3339)
+	events, err := srv.Events.List("primary").ShowDeleted(true).SingleEvents(true).TimeMin(t).OrderBy("startTime").Do() //SingleEvents(true).TimeMin(t).MaxResults(10).
+	if err != nil {
+		log.Fatalf("Unable to retrieve next ten of the user's events: %v", err)
+	}
 
-	// fmt.Println("Upcoming events:")
-	// if len(events.Items) == 0 {
-	// 	fmt.Println("No upcoming events found.")
-	// 	return
-	// }
+	fmt.Println("Upcoming events:")
+	if len(events.Items) == 0 {
+		fmt.Println("No upcoming events found.")
+		return
+	}
 
-	// for _, item := range events.Items {
-	// 	date := item.Start.DateTime
-	// 	if date == "" {
-	// 		date = item.Start.Date
-	// 	}
-	// 	fmt.Printf("%v (%v)\n", item.Summary, date)
-	// }
+	for _, item := range events.Items {
+		date := item.Start.DateTime
+		if date == "" {
+			date = item.Start.Date
+		}
+		fmt.Printf("%v (%v)\n", item.Summary, date)
+	}
 
 	fmt.Println("======SRV======")
 	fmt.Println(srv.Acl)
