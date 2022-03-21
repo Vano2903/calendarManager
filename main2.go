@@ -8,7 +8,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"time"
 
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -86,8 +85,6 @@ func main() {
 	}
 	client := getClient(config)
 
-	fmt.Println("======CALENDAR======")
-
 	s, err := oauth.NewService(ctx, option.WithHTTPClient(client))
 	if err != nil {
 		log.Fatalf("Unable to create OAuth client: %v", err)
@@ -97,6 +94,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("Unable to retrieve user info: %v", err)
 	}
+	fmt.Println("======INFO GENERALI======\n")
+
 	fmt.Println("======UTENTE INFO 1======")
 	fmt.Printf("email %q\n", info.Email)
 	fmt.Printf("family name %q\n", info.FamilyName)
@@ -108,13 +107,13 @@ func main() {
 	fmt.Printf("locale %q\n", info.Locale)
 	fmt.Printf("name %q\n", info.Name)
 	fmt.Printf("picure %q\n", info.Picture)
-	fmt.Printf("verified %v\n", info.VerifiedEmail)
+	fmt.Printf("verified %v\n", *info.VerifiedEmail)
 
 	info2, err := s.Tokeninfo().Do()
 	if err != nil {
 		log.Fatalf("Unable to retrieve user info: %v", err)
 	}
-	fmt.Println("======UTENTE INFO 2======")
+	fmt.Println("======UTENTE INFO 2 (inutile)======")
 	fmt.Printf("access_type %q\n", info2.AccessType)
 	fmt.Printf("audience %q\n", info2.Audience)
 	fmt.Printf("email %q\n", info2.Email)
@@ -133,30 +132,27 @@ func main() {
 		log.Fatalf("Unable to retrieve Calendar client: %v", err)
 	}
 	srv.UserAgent = "calendar-manager-v1"
+	fmt.Println("\n\n======CALENDARS JSON======\n")
+	// fmt.Println("======EVENTS======")
+	// t := time.Now().Format(time.RFC3339)
+	// events, err := srv.Events.List("primary").ShowDeleted(true).SingleEvents(true).TimeMin(t).OrderBy("startTime").Do() //SingleEvents(true).TimeMin(t).MaxResults(10).
+	// if err != nil {
+	// 	log.Fatalf("Unable to retrieve next ten of the user's events: %v", err)
+	// }
 
-	fmt.Println("======EVENTS======")
-	t := time.Now().Format(time.RFC3339)
-	events, err := srv.Events.List("primary").ShowDeleted(true).SingleEvents(true).TimeMin(t).OrderBy("startTime").Do() //SingleEvents(true).TimeMin(t).MaxResults(10).
-	if err != nil {
-		log.Fatalf("Unable to retrieve next ten of the user's events: %v", err)
-	}
+	// fmt.Println("Upcoming events:")
+	// if len(events.Items) == 0 {
+	// 	fmt.Println("No upcoming events found.")
+	// 	return
+	// }
 
-	fmt.Println("Upcoming events:")
-	if len(events.Items) == 0 {
-		fmt.Println("No upcoming events found.")
-		return
-	}
-
-	for _, item := range events.Items {
-		date := item.Start.DateTime
-		if date == "" {
-			date = item.Start.Date
-		}
-		fmt.Printf("%v (%v)\n", item.Summary, date)
-	}
-
-	fmt.Println("======SRV======")
-	fmt.Println(srv.Acl)
+	// for _, item := range events.Items {
+	// 	date := item.Start.DateTime
+	// 	if date == "" {
+	// 		date = item.Start.Date
+	// 	}
+	// 	fmt.Printf("%v (%v)\n", item.Summary, date)
+	// }
 
 	//!googleapi.IsNotModified(err)
 	idk, err := srv.CalendarList.List().Do()
@@ -169,24 +165,24 @@ func main() {
 	fmt.Println("calendar list etag", idk.Etag)
 	fmt.Println("calendar list next page token", idk.NextPageToken)
 	fmt.Println("calendar list next sync token", idk.NextSyncToken)
-	fmt.Println("calendar list force send", idk.ForceSendFields)
-	fmt.Println("calendar list nulls", idk.NullFields)
 
-	for _, item := range idk.Items {
+	fmt.Println("======REMINDERS======")
+
+	for i, item := range idk.Items {
 		// fmt.Printf("%v (%v)\n", item.Summary, item.Id)
+		fmt.Printf("======ELEMENT %d======\n", i)
+
 		fmt.Println("======CONFERENCE======")
 		fmt.Println("Conference proprieties solution:", item.ConferenceProperties.AllowedConferenceSolutionTypes)
-		fmt.Println("Conference proprieties force:", item.ConferenceProperties.ForceSendFields)
-		fmt.Println("Conference proprieties nulls:", item.ConferenceProperties.NullFields)
 
 		fmt.Println("\n======REMINDERS======")
 		if item.DefaultReminders != nil {
 			for _, reminder := range item.DefaultReminders {
 				fmt.Println("event reminder method:", reminder.Method)
 				fmt.Println("event reminder minutes:", reminder.Minutes)
-				fmt.Println("event reminder force:", reminder.ForceSendFields)
-				fmt.Println("event reminder nulls:", reminder.NullFields)
 			}
+		} else {
+			fmt.Println("event reminder:", "NONE")
 		}
 
 		fmt.Println("\n======NOTIFICATION======")
@@ -194,11 +190,9 @@ func main() {
 			for _, notification := range item.NotificationSettings.Notifications {
 				fmt.Println("notification method:", notification.Method)
 				fmt.Println("notification Type:", notification.Type)
-				fmt.Println("notification Force:", notification.ForceSendFields)
-				fmt.Println("notification Nulls:", notification.NullFields)
 			}
-			fmt.Println("notification settings nulls:", item.NotificationSettings.NullFields)
-			fmt.Println("notification settings force:", item.NotificationSettings.ForceSendFields)
+		} else {
+			fmt.Println("event notification:", "NONE")
 		}
 
 		fmt.Println("\n======ITEM FIELD======")
@@ -217,8 +211,6 @@ func main() {
 		fmt.Println("summary:", item.Summary)
 		fmt.Println("summaryOverride:", item.SummaryOverride)
 		fmt.Println("timeZone:", item.TimeZone)
-		fmt.Println("force send:", item.ForceSendFields)
-		fmt.Println("nulls:", item.NullFields)
 		fmt.Println()
 	}
 }
