@@ -25,7 +25,7 @@ func getClient(config *oauth2.Config) *http.Client {
 	tok, err := tokenFromFile(tokFile)
 	if err != nil {
 		tok = getTokenFromWeb(config)
-		saveToken(tokFile, tok)
+		// saveToken(tokFile, tok)
 	}
 
 	return config.Client(context.Background(), tok)
@@ -35,16 +35,23 @@ func getClient(config *oauth2.Config) *http.Client {
 func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 	authURL := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
 	fmt.Printf("premi l'url e, dopo aver verificato le varie cose copia il valore del parametro 'code': \n\n%v\n", authURL)
-	var authCode string
-	if _, err := fmt.Scan(&authCode); err != nil {
-		log.Fatalf("Unable to read authorization code: %v", err)
-	}
+	// var authCode string
+	// if _, err := fmt.Scan(&authCode); err != nil {
+	// 	log.Fatalf("Unable to read authorization code: %v", err)
+	// }
 
-	tok, err := config.Exchange(context.TODO(), authCode)
-	if err != nil {
-		log.Fatalf("Unable to retrieve token from web: %v", err)
-	}
-	return tok
+	var url string
+
+	oauther, _ := NewOauther("clientgoogle.json")
+	fmt.Print("get function")
+	fmt.Println(oauther.GetOauthCodeFromUrl(url))
+
+	// tok, err := config.Exchange(context.TODO(), authCode)
+	// if err != nil {
+	// 	log.Fatalf("Unable to retrieve token from web: %v", err)
+	// }
+	// return tok
+	return nil
 }
 
 // Retrieves a token from a local file.
