@@ -1,5 +1,5 @@
 // List of all endpoints
 const endpoints = new Map();
-endpoints.set("loginPage", "endpointUrl");
-endpoints.set("homePage", "endpointUrl");
-endpoints.set("newCalendar", "endpointUrl");
+endpoints.set("homePage", "pages/index.html");
+endpoints.set("loginPage", "pages/login.html");
+endpoints.set("calendar", "pages/calendar.html");
