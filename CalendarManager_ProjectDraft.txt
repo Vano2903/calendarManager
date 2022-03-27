@@ -1,0 +1,44 @@
+WebApp -> Mockup CalendarManager -> Accesso Al Foglio
+
+sarebbe bello pensando all'interfaccia dargli una palette tutta tendente al verde così sta bene con i fogli google (oppure anche cose con il blu che è il colore di calendar)
+
+Login OAuth:
+    Interfaccia:
+        - Google Login form
+    Funzioni:
+        -
+Create CalendarManager:
+    Intrefaccia:
+        - Bottone verde "crea un nuovo calendario"
+    Funzioni:
+        - Bottone per creare il foglio
+            [#] Crea il foglio sul drive dell'utente
+            [#] Prendi l'id del foglio e salvalo in un campo del db dedicato all'utente
+        - Bottone per aprire la pagina del foglio Google in un'altra tab
+            [#] Apri una nuova tab all'indirizzo URI fornito (Foglio Google)
+    Contenuto: (prima riga) (Calendar-Manager sheet) (pensate a un nome a sto foglio non mi interessa)
+        - Header:
+            - Titolo
+            - Descrizione
+            - Data e Ora inizio
+            - Data e Ora fine / Durata Evento (l'uno permette il calcolo automatico dell'altro)
+            - Colore
+            - Calendario [?] (direi che per questo momento il calendario di default può andare bene, possiamo comunque considerare la possibilità di aggiungere la funzionalità)
+        - Body:
+            - Valorizzazione dei campi indicati nell'Header
+Open CalendarManager:
+    Interfaccia:
+        - Icona spreadsheet, nome del foglio e data di ultima modifica (Icona dell'utente che per ultimo ha eseguito la modifica [Ipotesi Aggiuntiva])
+    Funzioni:
+        - Bottone per aprire la pagina del foglio Google in un'altra tab
+            [#] Apri una nuova tab all'indirizzo URI fornito (Foglio Google)
+Update Google Calendar
+    Interfaccia:
+        - Bottone per aggiornare Google Calendar (Bottone oscurato se non sono state apportate modifiche al foglio rispetto all'ultimo aggiornameto [Ipotesi Aggiuntiva])
+    Funzioni:
+        - Bottone per aggiornare Google Calendar ([Funzionalità bloccata se non sono state apportate modifiche al foglio rispetto all'ultimo aggiornamento [Ipotesi Aggiuntiva])
+            [#] Recupera i dati contenuti nel Foglio Google
+            [#] Formatta i dati come richiesto
+            [#] Invia i dati elaborati a Google Calendar
+Update Google Spreadsheet [Ipotesi Aggiuntiva]
+    
