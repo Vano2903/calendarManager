@@ -14,6 +14,7 @@ import (
 	"google.golang.org/api/calendar/v3"
 	oauth "google.golang.org/api/oauth2/v1"
 	"google.golang.org/api/option"
+	"google.golang.org/api/sheets/v4"
 )
 
 /*
@@ -367,7 +368,7 @@ func NewOauther(credentialFilePath string) (*Oauther, error) {
 	//calendar events rw access
 	//user informations and email r-only access
 	//the calendar scopes are defined here: https://developers.google.com/calendar/api/guides/auth#OAuth2Scope
-	config, err := google.ConfigFromJSON(b, calendar.CalendarScope, calendar.CalendarEventsScope, oauth.UserinfoProfileScope, oauth.UserinfoEmailScope, oauth.PlusMeScope)
+	config, err := google.ConfigFromJSON(b, calendar.CalendarScope, calendar.CalendarEventsScope, oauth.UserinfoProfileScope, oauth.UserinfoEmailScope, oauth.PlusMeScope, sheets.DriveFileScope)
 	if err != nil {
 		return nil, err
 	}
