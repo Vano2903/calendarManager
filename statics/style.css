@@ -23,8 +23,22 @@
     background-size: cover;
 }
 
-.modal {
+.loginButton {
+    margin: 0 auto;
+    border: 100;
+    width: 240px;
+    position: absolute;
+    top: 400px; 
+    left: 640px;
+    border-radius: 50%;
+    font-size: 80px;
+    background-color: #1D71EE;
 }
 
 .modal-content {
+}
+.pLogin{
+    font-size: 65px;
+    color: #FFFFFF;
+    font-style:oblique;
 }
