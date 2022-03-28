@@ -41,4 +41,6 @@ Update Google Calendar
             [#] Formatta i dati come richiesto
             [#] Invia i dati elaborati a Google Calendar
 Update Google Spreadsheet [Ipotesi Aggiuntiva]
-    
+
+TODO:
+    [#] Event to delete all expired refrehsTokens (server one)
