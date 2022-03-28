@@ -326,10 +326,20 @@ func init() {
 func main() {
 	r := mux.NewRouter()
 	r.Use(loggerMiddleware)
+
+	//serve static files
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
+	//!need to know the pages first
+	// r.HandleFunc("/oauth", oauthGooglePageHandler).Methods("GET")
+
+	api := r.PathPrefix("/api").Subrouter()
+	api.Use(AccessTokenMiddleware)
 	r.HandleFunc("/info", getUserInfoHandler).Methods("GET")
+
 	oauth := r.PathPrefix("/auth").Subrouter()
 	oauth.HandleFunc("/google/login", oauthGoogleHandler).Methods("GET")
 	oauth.HandleFunc("/google/callback", oauthGoogleCallback).Methods("GET")
+
 	fmt.Println("listening on port 8000")
 	if err := http.ListenAndServe(":8000", r); err != nil {
 		log.Fatal(err)
