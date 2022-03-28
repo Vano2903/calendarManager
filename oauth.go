@@ -303,6 +303,7 @@ func (o *Oauther) SetGoogleTokensFromAccessToken(connection *sql.DB) error {
 
 //if the refreshToken is set this function will generate a new server token pair and automatically
 //check if the google tokens are set, if not it will retrive them from the database using the old refreshToken
+//at least the refresh token must be set
 func (o *Oauther) GenerateNewTokenPairFromRefreshToken(connection *sql.DB) error {
 	//check if the refresh token is set in the struct
 	if o.ServerToken.RefreshToken == "" {
@@ -312,14 +313,13 @@ func (o *Oauther) GenerateNewTokenPairFromRefreshToken(connection *sql.DB) error
 	//check if the refresh token expiry is set
 	if o.ServerToken.ExpirationRefreshToken.IsZero() {
 		//if it's not set check the validity of the refresh token from the database
-		isExpired := IsTokenExpired(false, o.OauthToken.RefreshToken, connection)
-		if isExpired {
+		if IsTokenExpired(false, o.ServerToken.RefreshToken, connection) {
 			return fmt.Errorf("refresh token is expired, should do the oauth again")
 		}
 	} else {
 		//if it's set just use this one
 		//*could have been using just isTokenExpired but it's a database call less
-		if time.Now().After(o.OauthToken.Expiry) {
+		if time.Now().After(o.ServerToken.ExpirationRefreshToken) {
 			return fmt.Errorf("refresh token is expired, should do the oauth again")
 		}
 	}
