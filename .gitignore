@@ -1,2 +1,4 @@
 *.json
 .env
+.idea
+.db-dump
