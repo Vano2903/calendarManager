@@ -222,6 +222,34 @@ func (h *HandlerHttp) OauthGoogleCallbackHandler(w http.ResponseWriter, r *http.
 		return
 	}
 
+	if err := h.oauther.GetUserInformation(); err != nil {
+		fmt.Printf("error in oauther function, getting user information: %v\n", err)
+		resp.Errorf(w, http.StatusInternalServerError, "Error getting user information: %v", err)
+		return
+	}
+
+	//set calender and sheeter client
+	if h.sheeter, err = NewSheeter(h.oauther.Client); err != nil {
+		fmt.Printf("error creating new sheeter: %v\n", err)
+		resp.Errorf(w, http.StatusInternalServerError, "Error creating new sheeter: %v", err)
+		return
+	}
+	if h.calender, err = NewCalender(h.oauther.Client); err != nil {
+		fmt.Printf("error creating new calender: %v\n", err)
+		resp.Errorf(w, http.StatusInternalServerError, "Error creating new calender: %v", err)
+		return
+	}
+	if does, err := h.calender.DoesUserOwnCalendar(conn, h.oauther.UserInfo.Email); err != nil {
+		fmt.Printf("error checking if user owns calendar: %v\n", err)
+		resp.Errorf(w, http.StatusInternalServerError, "Error checking if user owns calendar: %v", err)
+		return
+	} else if !does {
+		if err := h.calender.CreateNewCalendar(conn, h.oauther.UserInfo.Email, "Calendar Manager"); err != nil {
+			fmt.Printf("error creating calendar: %v\n", err)
+			resp.Errorf(w, http.StatusInternalServerError, "Error creating calendar: %v", err)
+			return
+		}
+	}
 	//generate the token pair, the email will be autoretrived by the function
 	if err := h.oauther.GenerateTokensFromUserEmail(conn); err != nil {
 		fmt.Printf("error in oauther function, generating tokens from user email: %v\n", err)
@@ -269,6 +297,7 @@ func (h *HandlerHttp) CreateSheetHandler(w http.ResponseWriter, r *http.Request)
 		resp.Error(w, http.StatusInternalServerError, "Error connecting to DB")
 		return
 	}
+	defer conn.Close()
 
 	fmt.Println("is sheeter nil: ", h.sheeter == nil)
 
@@ -310,6 +339,31 @@ func (h *HandlerHttp) GetEventsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp.SuccessJson(w, http.StatusOK, "Successfully retrieved events", json)
+}
+
+//!========== CALENDAR HANDLERS
+
+func (h *HandlerHttp) UpdateCalendarHandler(w http.ResponseWriter, r *http.Request) {
+	conn, err := connectToDB()
+	if err != nil {
+		fmt.Printf("Error connecting to DB: %v\n", err)
+		resp.Error(w, http.StatusInternalServerError, "Error connecting to DB")
+		return
+	}
+	defer conn.Close()
+
+	if err := h.sheeter.GetEventsFromSheet(conn, h.oauther.UserInfo.Email); err != nil {
+		fmt.Printf("error in sheeter function, getting events: %v\n", err)
+		resp.Errorf(w, http.StatusBadRequest, "Error getting events: %v", err)
+		return
+	}
+
+	if err := h.calender.UpdateCalendar(h.sheeter.Events); err != nil {
+		fmt.Printf("error in calender function, updating calendar: %v\n", err)
+		resp.Errorf(w, http.StatusInternalServerError, "Error updating calendar: %v", err)
+		return
+	}
+	resp.Success(w, http.StatusOK, "Successfully updated calendar")
 }
 
 //set the oauth google struct, sheets and tokens structs
