@@ -363,6 +363,8 @@ func (h *HandlerHttp) UpdateCalendarHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	h.calender.DoesUserOwnCalendar(conn, h.oauther.UserInfo.Email)
+
 	if err := h.calender.UpdateCalendar(h.sheeter.Events); err != nil {
 		fmt.Printf("error in calender function, updating calendar: %v\n", err)
 		resp.Errorf(w, http.StatusInternalServerError, "Error updating calendar: %v", err)
