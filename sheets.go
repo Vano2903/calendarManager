@@ -26,6 +26,7 @@ type Event struct {
 	Description string        `json:"description"`
 	StartTime   time.Time     `json:"startTime"`
 	Duration    time.Duration `json:"duration"`
+	EndTime     time.Time     `json:"endTime"`
 	Color       string        `json:"color"`
 }
 
@@ -110,6 +111,7 @@ func (s *Sheeter) GetEventsFromSheet(connection *sql.DB, email string) error {
 		return nil
 	}
 	//get the events
+	s.Events = []Event{}
 	for i, row := range resp.Values {
 		// start := strings.Split(row[2].(string), " ")
 		start, err := time.Parse("2006-01-02 15:04", row[2].(string))
@@ -127,6 +129,7 @@ func (s *Sheeter) GetEventsFromSheet(connection *sql.DB, email string) error {
 			Description: row[1].(string),
 			StartTime:   start,
 			Duration:    d,
+			EndTime:     start.Add(d),
 			Color:       row[4].(string),
 		}
 		s.Events = append(s.Events, event)
