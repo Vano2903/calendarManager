@@ -62,7 +62,7 @@ func (c *Calender) CreateNewCalendar(connection *sql.DB, email, name string) err
 //update the calendar with all the events (it will delete all the events and then add them again)
 func (c *Calender) UpdateCalendar(events []Event) error {
 	//delete all the events from the calendar
-	eventsToDelete, err := c.CalendarService.Events.List(c.CalendarID).ShowDeleted(true).Do()
+	eventsToDelete, err := c.CalendarService.Events.List(c.CalendarID).ShowDeleted(false).Do()
 	if err != nil {
 		return err
 	}
