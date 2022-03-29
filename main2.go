@@ -24,9 +24,12 @@ func main() {
 	r.Use(handler.loggerMiddleware)
 
 	//serve static files
-	r.PathPrefix("/static").Handler(http.FileServer(http.Dir("./static/")))
-	//!need to know the pages first
-	// r.HandleFunc("/oauth", oauthGooglePageHandler).Methods("GET")
+	r.PathPrefix("/statics").Handler(http.StripPrefix("/statics", http.FileServer(http.Dir("statics/"))))
+	r.HandleFunc("/", handler.LoginHandler).Methods("GET")
+
+	user := r.PathPrefix("/user").Subrouter()
+	user.Use(handler.AccessTokenMiddleware)
+	user.HandleFunc("/home", handler.HomeHandler).Methods("GET")
 
 	sheets := r.PathPrefix("/sheets").Subrouter()
 	sheets.Use(handler.AccessTokenMiddleware)

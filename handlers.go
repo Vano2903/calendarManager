@@ -3,8 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"text/template"
 	"time"
 
 	resp "github.com/vano2903/calendarManager/responser"
@@ -191,7 +193,9 @@ func (h *HandlerHttp) OauthGoogleHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	//redirect the user to the url
-	http.Redirect(w, r, url, http.StatusFound)
+	// http.Redirect(w, r, url, http.StatusFound)
+	m := map[string]interface{}{"url": url}
+	resp.SuccessMap(w, http.StatusOK, "you can login using this url", m)
 }
 
 //oauth callback handler
@@ -271,13 +275,14 @@ func (h *HandlerHttp) OauthGoogleCallbackHandler(w http.ResponseWriter, r *http.
 		Expires: time.Now().Add(time.Hour * 24 * 7),
 	})
 
-	json, err := json.Marshal(h.oauther.ServerToken)
-	if err != nil {
-		fmt.Printf("error in oauther function, marshaling server token: %v\n", err)
-		resp.Errorf(w, http.StatusInternalServerError, "Error marshaling server token: %v", err)
-		return
-	}
-	resp.SuccessJson(w, http.StatusOK, "Successfully authenticated", json)
+	http.Redirect(w, r, "/user/home", http.StatusFound)
+	// json, err := json.Marshal(h.oauther.ServerToken)
+	// if err != nil {
+	// 	fmt.Printf("error in oauther function, marshaling server token: %v\n", err)
+	// 	resp.Errorf(w, http.StatusInternalServerError, "Error marshaling server token: %v", err)
+	// 	return
+	// }
+	// resp.SuccessJson(w, http.StatusOK, "Successfully authenticated", json)
 }
 
 //!========== SHEETS HANDLERS
@@ -364,6 +369,88 @@ func (h *HandlerHttp) UpdateCalendarHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	resp.Success(w, http.StatusOK, "Successfully updated calendar")
+}
+
+//!========== STATIC HANDLERS
+func (h *HandlerHttp) LoginHandler(w http.ResponseWriter, r *http.Request) {
+	var refreshToken string
+	for _, cookie := range r.Cookies() {
+		switch cookie.Name {
+		case "refreshToken":
+			refreshToken = cookie.Value
+		}
+	}
+
+	if refreshToken != "" {
+		//redirect to the homepage
+		http.Redirect(w, r, "/user/home", http.StatusFound)
+		return
+	}
+
+	//read the file static/pages/login.html
+	file, err := ioutil.ReadFile("pages/login.html")
+	if err != nil {
+		fmt.Printf("error reading file: %v\n", err)
+		resp.Error(w, http.StatusServiceUnavailable, "uh oh, looks like we have some problems getting what you want, dont worry it's on us though")
+		return
+	}
+	//write the file to the response
+	w.Write(file)
+}
+
+func (h *HandlerHttp) HomeHandler(w http.ResponseWriter, r *http.Request) {
+	//read the file static/pages/home.html
+	// file, err := ioutil.ReadFile("pages/home.html")
+	// if err != nil {
+	// 	fmt.Printf("error reading file: %v\n", err)
+	// 	resp.Error(w, http.StatusServiceUnavailable, "uh oh, looks like we have some problems getting what you want, dont worry it's on us though")
+	// 	return
+	// }
+	// //write the file to the response
+	// w.Write(file)
+	conn, err := connectToDB()
+	if err != nil {
+		fmt.Printf("Error connecting to DB: %v\n", err)
+		resp.Error(w, http.StatusInternalServerError, "Error connecting to DB")
+		return
+	}
+	defer conn.Close()
+
+	hasOne, err := h.sheeter.DoesUserOwnSheet(conn, h.oauther.UserInfo.Email)
+	if err != nil {
+		fmt.Printf("error in sheeter function, getting events: %v\n", err)
+		resp.Errorf(w, http.StatusInternalServerError, "Error getting events: %v", err)
+		return
+	}
+
+	var funcName, buttString string
+	if !hasOne {
+		funcName = "createSheet()"
+		buttString = "Crea Un Nuovo Foglio"
+	} else {
+		funcName = "updateCalendar()"
+		buttString = "Aggiorna Il Calendario"
+	}
+	data := struct {
+		Pfp      string
+		Name     string
+		Function string
+		Button   string
+	}{
+		Pfp:      h.oauther.UserInfo.Picture,
+		Name:     h.oauther.UserInfo.Name,
+		Function: funcName,
+		Button:   buttString,
+	}
+
+	tmpl, err := template.ParseFiles("pages/home.html")
+	if err != nil {
+		resp.Errorf(w, http.StatusServiceUnavailable, "error parsing the template: %v", err.Error())
+		return
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	tmpl.Execute(w, data)
 }
 
 //set the oauth google struct, sheets and tokens structs

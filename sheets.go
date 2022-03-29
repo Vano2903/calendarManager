@@ -87,6 +87,9 @@ func (s Sheeter) DoesUserOwnSheet(connection *sql.DB, email string) (bool, error
 	var count int
 	err := connection.QueryRow("SELECT COUNT(*) FROM sheets WHERE emailOwner = ?", email).Scan(&count)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
 		return false, err
 	}
 	return count > 0, nil
