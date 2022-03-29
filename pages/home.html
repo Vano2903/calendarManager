@@ -24,18 +24,15 @@
         <!-- </div> -->
     </nav>
 
-    <br>
-    <img src="{{.Pfp}}" style="height: 80px;" class="img-fluid" alt="Google User Profile Picture">
-    <!--  -->
-    <br>
-    <h2>Benvenuto {{.Name}}</h2>
+    <div class="vanocontainer">
+        <img src="{{.Pfp}}" style="height: 80px;width: 80px;" class="img-fluid" alt="Google User Profile Picture">
+        <h2>Benvenuto {{.Name}}</h2>
 
-
-    <!-- make a big green button at the center of the screen saying "ciao" -->
-    <button id="sheetbtn" type="button" onclick="{{.Function}}" class="login-with-google-btn">
-        {{.Button}}
-    </button>
-    <br>
+        <!-- make a big green button at the center of the screen saying "ciao" -->
+        <button id="sheetbtn" type="button" onclick="{{.Function}}" class="login-with-google-btn">
+            {{.Button}}
+        </button>
+    </div>    
     <div class="alert alert-info" role="alert" id="msg"></div>
     <script src="/statics/js/home.js"></script>
 </body>
