@@ -274,9 +274,8 @@ func (o *Oauther) SetGoogleTokensFromAccessToken(connection *sql.DB) error {
 
 	//generate a new client, this will automatically autorefresh the token
 	//documentation: https://godoc.org/golang.org/x/oauth2#Config.Client
-	if o.Client == nil {
-		o.Client = o.Config.Client(o.Ctx, tok)
-	}
+	o.Client = o.Config.Client(o.Ctx, tok)
+	o.OauthToken = tok
 
 	var err error
 	//check if the token is expired
@@ -294,8 +293,6 @@ func (o *Oauther) SetGoogleTokensFromAccessToken(connection *sql.DB) error {
 		WHERE ID = ?`
 		//update the google tokens
 		_, err = connection.Exec(updateGoogleTokensQuery, o.OauthToken.AccessToken, o.OauthToken.Expiry, o.OauthToken.RefreshToken, ID)
-	} else {
-		o.OauthToken = tok
 	}
 
 	return err
@@ -337,7 +334,7 @@ func (o *Oauther) GenerateNewTokenPairFromRefreshToken(connection *sql.DB) error
 		var ID int
 		var googleAccessToken, googleRefreshToken string
 		var googleExp time.Time
-		err := connection.QueryRowContext(o.Ctx, getGoogleTokensFromRefreshTokenQuery, o.OauthToken.RefreshToken).Scan(&ID, &googleAccessToken, &googleExp, &googleRefreshToken, &o.ServerToken.ExpirationRefreshToken)
+		err := connection.QueryRowContext(o.Ctx, getGoogleTokensFromRefreshTokenQuery, o.ServerToken.RefreshToken).Scan(&ID, &googleAccessToken, &googleExp, &googleRefreshToken, &o.ServerToken.ExpirationRefreshToken)
 		if err != nil {
 			return err
 		}
@@ -348,6 +345,13 @@ func (o *Oauther) GenerateNewTokenPairFromRefreshToken(connection *sql.DB) error
 		tok.RefreshToken = googleRefreshToken
 		tok.TokenType = "Bearer"
 		o.OauthToken = tok
+		if o.Client == nil {
+			o.Client = o.Config.Client(o.Ctx, tok)
+		}
+	} else {
+		if o.Client == nil {
+			o.Client = o.Config.Client(o.Ctx, o.OauthToken)
+		}
 	}
 
 	//generate new tokens
