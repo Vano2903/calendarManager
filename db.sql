@@ -1,3 +1,9 @@
+CREATE TABLE IF NOT EXISTS `sheets` (
+    `sheetID` VARCHAR(50) NOT NULL,
+    `emailOwner` VARCHAR(75) NOT NULL,
+    PRIMARY KEY (`emailOwner`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE IF NOT EXISTS `states` (
     `value` VARCHAR(20) NOT NULL,
     `expiration` TIMESTAMP NOT NULL,
