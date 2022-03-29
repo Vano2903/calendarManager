@@ -4,6 +4,12 @@ CREATE TABLE IF NOT EXISTS `sheets` (
     PRIMARY KEY (`emailOwner`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS `calendars` (
+    `calendarID` VARCHAR(70) NOT NULL,
+    `emailOwner` VARCHAR(75) NOT NULL,
+    PRIMARY KEY (`emailOwner`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE IF NOT EXISTS `states` (
     `value` VARCHAR(20) NOT NULL,
     `expiration` TIMESTAMP NOT NULL,
